@@ -1,0 +1,75 @@
+using NotificationService.Domain.Enums;
+
+namespace NotificationService.Domain.Entities;
+
+/// <summary>
+/// Entidade de domínio que representa o histórico de uma notificação
+/// </summary>
+public class NotificationHistory
+{
+    public string Id { get; private set; }
+    public string UserId { get; private set; }
+    public string Email { get; private set; }
+    public string Subject { get; private set; }
+    public string Message { get; private set; }
+    public NotificationType Type { get; private set; }
+    public NotificationStatus Status { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? SentAt { get; private set; }
+
+    // Construtor privado para EF Core
+    private NotificationHistory() 
+    {
+        Id = string.Empty;
+        UserId = string.Empty;
+        Email = string.Empty;
+        Subject = string.Empty;
+        Message = string.Empty;
+    }
+
+    // Construtor público para criação de novas notificações
+    public NotificationHistory(
+        string userId,
+        string email,
+        string subject,
+        string message,
+        NotificationType type)
+    {
+        Id = Guid.NewGuid().ToString();
+        UserId = userId ?? throw new ArgumentNullException(nameof(userId));
+        Email = email ?? throw new ArgumentNullException(nameof(email));
+        Subject = subject ?? throw new ArgumentNullException(nameof(subject));
+        Message = message ?? string.Empty;
+        Type = type;
+        Status = NotificationStatus.Pending;
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Marca a notificação como enviada com sucesso
+    /// </summary>
+    public void MarkAsSent()
+    {
+        Status = NotificationStatus.Sent;
+        SentAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Marca a notificação como falha
+    /// </summary>
+    public void MarkAsFailed()
+    {
+        Status = NotificationStatus.Failed;
+        SentAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Valida se o email está em formato válido
+    /// </summary>
+    public bool IsValidEmail()
+    {
+        return !string.IsNullOrWhiteSpace(Email) 
+            && Email.Contains('@') 
+            && Email.Contains('.');
+    }
+}
