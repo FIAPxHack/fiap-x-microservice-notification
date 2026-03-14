@@ -23,9 +23,6 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Rodar Testes
-        run: dotnet test --no-build --configuration Release --verbosity normal
-
       - name: Rodar Testes com Cobertura
         run: |
           dotnet test NotificationService.sln \
