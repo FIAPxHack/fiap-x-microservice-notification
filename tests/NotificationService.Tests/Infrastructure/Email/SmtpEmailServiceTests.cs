@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NotificationService.Infrastructure.Email;
@@ -14,13 +13,11 @@ public class SmtpEmailServiceTests
 {
     private readonly Mock<ILogger<SmtpEmailService>> _mockLogger;
     private readonly SmtpEmailService _emailService;
-    private readonly Mock<IConfiguration> _mockConfiguration;
 
     public SmtpEmailServiceTests()
     {
         _mockLogger = new Mock<ILogger<SmtpEmailService>>();
-        _mockConfiguration = new Mock<IConfiguration>();
-        _emailService = new SmtpEmailService(_mockLogger.Object, _mockConfiguration.Object);
+        _emailService = new SmtpEmailService(_mockLogger.Object);
     }
 
     [Fact]

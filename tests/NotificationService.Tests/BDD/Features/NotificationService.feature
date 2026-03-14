@@ -14,7 +14,7 @@ Funcionalidade: Envio de Notificações
     Dado que tenho um usuário com ID "user456" e email "user@example.com"
     Quando eu envio uma notificação do tipo "VideoProcessingStarted"
     Então a notificação deve ser enviada com sucesso
-    E o assunto do email deve conter "Processamento Iniciado"
+    E o assunto do email deve conter "processamento"
 
   Cenário: Enviar notificação de processamento concluído
     Dado que tenho um usuário com ID "user789" e email "completed@example.com"

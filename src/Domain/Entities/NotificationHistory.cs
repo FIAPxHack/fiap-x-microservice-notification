@@ -51,7 +51,10 @@ public class NotificationHistory
     public void MarkAsSent()
     {
         Status = NotificationStatus.Sent;
-        SentAt = DateTime.UtcNow;
+        if (!SentAt.HasValue)
+        {
+            SentAt = DateTime.UtcNow;
+        }
     }
 
     /// <summary>
@@ -60,7 +63,6 @@ public class NotificationHistory
     public void MarkAsFailed()
     {
         Status = NotificationStatus.Failed;
-        SentAt = DateTime.UtcNow;
     }
 
     /// <summary>
