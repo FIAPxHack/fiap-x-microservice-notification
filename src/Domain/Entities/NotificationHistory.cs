@@ -1,4 +1,5 @@
 using NotificationService.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace NotificationService.Domain.Entities;
 
@@ -70,8 +71,23 @@ public class NotificationHistory
     /// </summary>
     public bool IsValidEmail()
     {
-        return !string.IsNullOrWhiteSpace(Email) 
-            && Email.Contains('@') 
-            && Email.Contains('.');
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            return false;
+        }
+
+        var parts = Email.Split('@');
+        if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+        {
+            return false;
+        }
+
+        var domain = parts[1];
+        if (domain.StartsWith('.') || domain.EndsWith('.') || !domain.Contains('.'))
+        {
+            return false;
+        }
+
+        return new EmailAddressAttribute().IsValid(Email);
     }
 }

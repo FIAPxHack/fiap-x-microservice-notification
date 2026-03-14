@@ -16,14 +16,12 @@ namespace NotificationService.Tests.Controllers;
 public class LegacyNotificationsControllerTests
 {
     private readonly Mock<INotificationService> _notificationServiceMock;
-    private readonly Mock<ILogger<NotificationsController>> _loggerMock;
     private readonly NotificationsController _controller;
 
     public LegacyNotificationsControllerTests()
     {
         _notificationServiceMock = new Mock<INotificationService>();
-        _loggerMock = new Mock<ILogger<NotificationsController>>();
-        _controller = new NotificationsController(_notificationServiceMock.Object, _loggerMock.Object);
+        _controller = new NotificationsController(_notificationServiceMock.Object);
     }
 
     [Fact]
@@ -107,75 +105,6 @@ public class LegacyNotificationsControllerTests
     }
 
     [Fact]
-    public async Task GetUserNotifications_ShouldReturnOk_WithNotifications()
-    {
-        // Arrange
-        var userId = "user123";
-        var notifications = new List<NotificationHistory>
-        {
-            new NotificationHistory
-            {
-                Id = "1",
-                UserId = userId,
-                Email = "test@test.com",
-                Subject = "Test",
-                Type = NotificationType.General,
-                Status = NotificationStatus.Sent
-            }
-        };
-
-        _notificationServiceMock
-            .Setup(x => x.GetUserNotificationsAsync(userId))
-            .ReturnsAsync(notifications);
-
-        // Act
-        var result = await _controller.GetUserNotifications(userId);
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedNotifications = okResult.Value.Should().BeAssignableTo<IEnumerable<NotificationHistory>>().Subject;
-        returnedNotifications.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public async Task GetUserNotifications_ShouldReturnBadRequest_WhenUserIdIsEmpty()
-    {
-        // Act
-        var result = await _controller.GetUserNotifications("");
-
-        // Assert
-        result.Should().BeOfType<BadRequestObjectResult>();
-    }
-
-    [Fact]
-    public async Task GetUserNotifications_ShouldReturnBadRequest_WhenUserIdIsWhitespace()
-    {
-        // Act
-        var result = await _controller.GetUserNotifications("   ");
-
-        // Assert
-        result.Should().BeOfType<BadRequestObjectResult>();
-    }
-
-    [Fact]
-    public async Task GetUserNotifications_ShouldReturnOk_WhenNoNotifications()
-    {
-        // Arrange
-        var userId = "user123";
-        _notificationServiceMock
-            .Setup(x => x.GetUserNotificationsAsync(userId))
-            .ReturnsAsync(new List<NotificationHistory>());
-
-        // Act
-        var result = await _controller.GetUserNotifications(userId);
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedNotifications = okResult.Value.Should().BeAssignableTo<IEnumerable<NotificationHistory>>().Subject;
-        returnedNotifications.Should().BeEmpty();
-    }
-
-    [Fact]
     public void Health_ShouldReturnOk_WithHealthStatus()
     {
         // Act
@@ -218,22 +147,6 @@ public class LegacyNotificationsControllerTests
 
         // Assert
         result.Should().BeOfType<OkObjectResult>();
-    }
-
-    [Fact]
-    public async Task GetUserNotifications_ShouldCallService_WithCorrectUserId()
-    {
-        // Arrange
-        var userId = "specific-user-id";
-        _notificationServiceMock
-            .Setup(x => x.GetUserNotificationsAsync(userId))
-            .ReturnsAsync(new List<NotificationHistory>());
-
-        // Act
-        await _controller.GetUserNotifications(userId);
-
-        // Assert
-        _notificationServiceMock.Verify(x => x.GetUserNotificationsAsync(userId), Times.Once);
     }
 
     [Fact]

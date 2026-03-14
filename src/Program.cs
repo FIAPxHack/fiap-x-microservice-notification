@@ -1,7 +1,9 @@
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.UseCases;
+using NotificationService.Domain.Interfaces.Repositories;
 using NotificationService.Domain.Interfaces.Services;
 using NotificationService.Infrastructure.Email;
+using NotificationService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,10 +25,12 @@ builder.Services.AddSwaggerGen(options =>
 // ==== DEPENDENCY INJECTION - Clean Architecture ====
 
 // Domain Layer Interfaces -> Infrastructure Implementations
+builder.Services.AddSingleton<INotificationRepository, InMemoryNotificationRepository>();
 builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
 
 // Application Layer - Use Cases
 builder.Services.AddScoped<ISendNotificationUseCase, SendNotificationUseCase>();
+builder.Services.AddScoped<IGetUserNotificationsUseCase, GetUserNotificationsUseCase>();
 
 // ==== END DEPENDENCY INJECTION ====
 

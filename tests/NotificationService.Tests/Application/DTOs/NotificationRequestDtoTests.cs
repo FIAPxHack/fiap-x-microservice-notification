@@ -15,7 +15,7 @@ public class NotificationRequestDtoTests
     public void NotificationRequestDto_ShouldHaveDefaultValues()
     {
         // Arrange & Act
-        var dto = new NotificationRequestDto();
+        var dto = new NotificationRequestDto { Type = default };
 
         // Assert
         dto.UserId.Should().Be(string.Empty);
