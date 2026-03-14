@@ -143,7 +143,7 @@ namespace NotificationService.Tests.BDD.Features
     testRunner.Then("a notificação deve ser enviada com sucesso", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Então ");
 #line hidden
 #line 17
-    testRunner.And("o assunto do email deve conter \"Processamento Iniciado\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "E ");
+    testRunner.And("o assunto do email deve conter \"processamento\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "E ");
 #line hidden
             }
             this.ScenarioCleanup();

@@ -113,18 +113,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Exportar nome da imagem em lowercase
-        shell: bash
-        run: |
-          echo "IMAGE_NAME_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
-
       - name: Extrair metadados Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
           tags: |
-            latest
+            type=raw,value=latest
 
       - name: Construir e enviar imagem Docker
         id: docker-build-and-push-image
@@ -133,7 +128,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

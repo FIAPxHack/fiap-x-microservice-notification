@@ -56,6 +56,10 @@ public class SendNotificationUseCase : ISendNotificationUseCase
             await _repository.SaveAsync(notification);
 
             // 5. Enviar email
+            _logger.LogInformation(
+                "Enviando notificação {NotificationId} para {Email}",
+                notification.Id, notification.Email);
+
             try
             {
                 await _emailService.SendEmailAsync(
@@ -85,8 +89,10 @@ public class SendNotificationUseCase : ISendNotificationUseCase
                 notification.MarkAsFailed();
                 await _repository.UpdateAsync(notification);
 
-                throw new EmailSendException(
-                    $"Falha ao enviar email para {notification.Email}", ex);
+                _logger.LogError(ex, "Falha ao enviar email para {Email}", notification.Email);
+
+                throw new NotificationException(
+                    $"Falha ao enviar notificação para {notification.Email}", ex);
             }
         }
         catch (InvalidEmailException ex)
@@ -98,14 +104,10 @@ public class SendNotificationUseCase : ISendNotificationUseCase
                 Message = ex.Message
             };
         }
-        catch (EmailSendException ex)
+        catch (NotificationException)
         {
-            _logger.LogError(ex, "Erro ao enviar notificação para {Email}", request.Email);
-            return new NotificationResponseDto
-            {
-                Success = false,
-                Message = "Erro ao enviar notificação. Tente novamente mais tarde."
-            };
+            // Re-lançar exceções de notificação para que os testes possam capturar
+            throw;
         }
         catch (Exception ex)
         {

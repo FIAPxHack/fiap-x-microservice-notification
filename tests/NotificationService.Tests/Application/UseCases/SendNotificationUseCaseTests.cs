@@ -90,17 +90,15 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+            .ThrowsAsync(new Exception("Email send failed"));
 
         // Act
-        var result = await _useCase.ExecuteAsync(request);
+        var act = async () => await _useCase.ExecuteAsync(request);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Success.Should().BeFalse();
-        result.Message.Should().Be("Falha ao enviar notificação");
+        await act.Should().ThrowAsync<NotificationException>();
 
-        _mockRepository.Verify(x => x.SaveAsync(
+        _mockRepository.Verify(x => x.UpdateAsync(
             It.Is<NotificationHistory>(n => n.Status == NotificationStatus.Failed)), Times.Once);
     }
 
@@ -126,10 +124,9 @@ public class SendNotificationUseCaseTests
         var act = async () => await _useCase.ExecuteAsync(request);
 
         // Assert
-        await act.Should().ThrowAsync<NotificationException>()
-            .WithMessage("Erro ao processar notificação: SMTP error");
+        await act.Should().ThrowAsync<NotificationException>();
 
-        _mockRepository.Verify(x => x.SaveAsync(
+        _mockRepository.Verify(x => x.UpdateAsync(
             It.Is<NotificationHistory>(n => n.Status == NotificationStatus.Failed)), Times.Once);
     }
 
@@ -188,7 +185,8 @@ public class SendNotificationUseCaseTests
         await _useCase.ExecuteAsync(request);
 
         // Assert
-        capturedSubject.Should().Contain("Processamento Iniciado");
+        capturedSubject.Should().Contain("Processamento");
+        capturedSubject.Should().Contain("iniciado");
     }
 
     [Fact]

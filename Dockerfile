@@ -2,9 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copiar solution e projeto
+# Copiar solution e projetos
 COPY NotificationService.sln ./
 COPY src/NotificationService.csproj src/
+COPY tests/NotificationService.Tests/NotificationService.Tests.csproj tests/NotificationService.Tests/
 
 # Restaurar dependências
 RUN dotnet restore

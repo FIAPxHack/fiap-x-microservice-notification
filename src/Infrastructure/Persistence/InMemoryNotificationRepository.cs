@@ -9,28 +9,28 @@ namespace NotificationService.Infrastructure.Persistence;
 /// </summary>
 public class InMemoryNotificationRepository : INotificationRepository
 {
-    private readonly ConcurrentDictionary<string, NotificationHistory> _notifications = new();
+    private readonly ConcurrentBag<NotificationHistory> _notifications = new();
 
     public Task<NotificationHistory> SaveAsync(NotificationHistory notification)
     {
         if (notification == null)
             throw new ArgumentNullException(nameof(notification));
 
-        _notifications.TryAdd(notification.Id, notification);
+        _notifications.Add(notification);
         return Task.FromResult(notification);
     }
 
     public Task<NotificationHistory?> GetByIdAsync(string id)
     {
-        _notifications.TryGetValue(id, out var notification);
+        var notification = _notifications.FirstOrDefault(n => n.Id == id);
         return Task.FromResult(notification);
     }
 
     public Task<IEnumerable<NotificationHistory>> GetByUserIdAsync(string userId)
     {
-        var notifications = _notifications.Values
+        var notifications = _notifications
             .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedAt)
+            .OrderBy(n => n.CreatedAt)
             .AsEnumerable();
 
         return Task.FromResult(notifications);
@@ -41,7 +41,8 @@ public class InMemoryNotificationRepository : INotificationRepository
         if (notification == null)
             throw new ArgumentNullException(nameof(notification));
 
-        _notifications[notification.Id] = notification;
+        // Para atualizar em ConcurrentBag, precisamos encontrar e manter a referência
+        // Como estamos trabalhando com referências, a atualização já foi feita no objeto
         return Task.CompletedTask;
     }
 }
