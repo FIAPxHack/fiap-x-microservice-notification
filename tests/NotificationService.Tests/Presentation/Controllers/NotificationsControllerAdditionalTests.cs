@@ -16,15 +16,18 @@ namespace NotificationService.Tests.Presentation.Controllers;
 public class NotificationsControllerAdditionalTests
 {
     private readonly Mock<ISendNotificationUseCase> _mockSendUseCase;
+    private readonly Mock<IGetUserNotificationsUseCase> _mockGetUseCase;
     private readonly Mock<ILogger<NotificationsController>> _mockLogger;
     private readonly NotificationsController _controller;
 
     public NotificationsControllerAdditionalTests()
     {
         _mockSendUseCase = new Mock<ISendNotificationUseCase>();
+        _mockGetUseCase = new Mock<IGetUserNotificationsUseCase>();
         _mockLogger = new Mock<ILogger<NotificationsController>>();
         _controller = new NotificationsController(
             _mockSendUseCase.Object,
+            _mockGetUseCase.Object,
             _mockLogger.Object);
     }
 

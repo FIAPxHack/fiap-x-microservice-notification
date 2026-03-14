@@ -4,6 +4,7 @@ using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enums;
 using NotificationService.Domain.Exceptions;
+using NotificationService.Domain.Interfaces.Repositories;
 using NotificationService.Domain.Interfaces.Services;
 
 namespace NotificationService.Application.UseCases;
@@ -13,13 +14,16 @@ namespace NotificationService.Application.UseCases;
 /// </summary>
 public class SendNotificationUseCase : ISendNotificationUseCase
 {
+    private readonly INotificationRepository _repository;
     private readonly IEmailService _emailService;
     private readonly ILogger<SendNotificationUseCase> _logger;
 
     public SendNotificationUseCase(
+        INotificationRepository repository,
         IEmailService emailService,
         ILogger<SendNotificationUseCase> logger)
     {
+        _repository = repository;
         _emailService = emailService;
         _logger = logger;
     }
@@ -48,7 +52,10 @@ public class SendNotificationUseCase : ISendNotificationUseCase
                 throw new InvalidEmailException(request.Email);
             }
 
-            // 4. Enviar email
+            // 4. Salvar notificação como pendente
+            await _repository.SaveAsync(notification);
+
+            // 5. Enviar email
             _logger.LogInformation(
                 "Enviando notificação {NotificationId} para {Email}",
                 notification.Id, notification.Email);
@@ -60,6 +67,9 @@ public class SendNotificationUseCase : ISendNotificationUseCase
                     notification.Subject,
                     notification.Message
                 );
+
+                notification.MarkAsSent();
+                await _repository.UpdateAsync(notification);
 
                 _logger.LogInformation(
                     "Notificação {NotificationId} enviada com sucesso para {Email}",
@@ -74,6 +84,9 @@ public class SendNotificationUseCase : ISendNotificationUseCase
             }
             catch (Exception ex)
             {
+                notification.MarkAsFailed();
+                await _repository.UpdateAsync(notification);
+
                 _logger.LogError(ex, "Falha ao enviar email para {Email}", notification.Email);
 
                 throw new NotificationException(

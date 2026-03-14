@@ -3,8 +3,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.UseCases;
+using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enums;
 using NotificationService.Domain.Exceptions;
+using NotificationService.Domain.Interfaces.Repositories;
 using NotificationService.Domain.Interfaces.Services;
 using Xunit;
 
@@ -15,15 +17,24 @@ namespace NotificationService.Tests.Application.UseCases;
 /// </summary>
 public class SendNotificationUseCaseTests
 {
+    private readonly Mock<INotificationRepository> _mockRepository;
     private readonly Mock<IEmailService> _mockEmailService;
     private readonly Mock<ILogger<SendNotificationUseCase>> _mockLogger;
     private readonly SendNotificationUseCase _useCase;
 
     public SendNotificationUseCaseTests()
     {
+        _mockRepository = new Mock<INotificationRepository>();
         _mockEmailService = new Mock<IEmailService>();
         _mockLogger = new Mock<ILogger<SendNotificationUseCase>>();
+
+        _mockRepository.Setup(x => x.SaveAsync(It.IsAny<NotificationHistory>()))
+            .ReturnsAsync((NotificationHistory notification) => notification);
+        _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<NotificationHistory>()))
+            .Returns(Task.CompletedTask);
+
         _useCase = new SendNotificationUseCase(
+            _mockRepository.Object,
             _mockEmailService.Object,
             _mockLogger.Object);
     }

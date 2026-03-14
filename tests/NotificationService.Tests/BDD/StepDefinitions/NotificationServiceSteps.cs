@@ -5,6 +5,7 @@ using NotificationService.Application.DTOs;
 using NotificationService.Application.UseCases;
 using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enums;
+using NotificationService.Domain.Exceptions;
 using NotificationService.Domain.Interfaces.Repositories;
 using NotificationService.Domain.Interfaces.Services;
 using TechTalk.SpecFlow;
@@ -18,8 +19,8 @@ public class NotificationServiceSteps
     private readonly Mock<IEmailService> _mockEmailService;
     private readonly Mock<ILogger<SendNotificationUseCase>> _mockSendLogger;
     private readonly Mock<ILogger<GetUserNotificationsUseCase>> _mockGetLogger;
-    private SendNotificationUseCase _sendUseCase;
-    private GetUserNotificationsUseCase _getUserNotificationsUseCase;
+    private readonly SendNotificationUseCase _sendUseCase;
+    private readonly GetUserNotificationsUseCase _getUserNotificationsUseCase;
 
     private string? _userId;
     private string? _email;
@@ -37,7 +38,14 @@ public class NotificationServiceSteps
         _mockGetLogger = new Mock<ILogger<GetUserNotificationsUseCase>>();
 
         SetupMocks();
-        CreateUseCases();
+        _sendUseCase = new SendNotificationUseCase(
+            _mockRepository.Object,
+            _mockEmailService.Object,
+            _mockSendLogger.Object);
+
+        _getUserNotificationsUseCase = new GetUserNotificationsUseCase(
+            _mockRepository.Object,
+            _mockGetLogger.Object);
     }
 
     private void SetupMocks()
@@ -62,22 +70,7 @@ public class NotificationServiceSteps
             .Returns(Task.CompletedTask);
 
         _mockRepository.Setup(x => x.GetByUserIdAsync(It.IsAny<string>()))
-            .ReturnsAsync((string userId) =>
-            {
-                return new List<NotificationHistory>();
-            });
-    }
-
-    private void CreateUseCases()
-    {
-        _sendUseCase = new SendNotificationUseCase(
-            _mockRepository.Object,
-            _mockEmailService.Object,
-            _mockSendLogger.Object);
-
-        _getUserNotificationsUseCase = new GetUserNotificationsUseCase(
-            _mockRepository.Object,
-            _mockGetLogger.Object);
+            .ReturnsAsync(Enumerable.Empty<NotificationHistory>());
     }
 
     [Given(@"que tenho um usuário com ID ""(.*)"" e email ""(.*)""")]
@@ -186,7 +179,7 @@ public class NotificationServiceSteps
         {
             _sendResult = await _sendUseCase.ExecuteAsync(request);
         }
-        catch (NotificationService.Domain.Exceptions.NotificationException)
+        catch (NotificationException)
         {
             // Expected when email service is unavailable
             _sendResult = new NotificationResponseDto
@@ -236,19 +229,16 @@ public class NotificationServiceSteps
     public void EntaoOStatusDeveSer(string status)
     {
         var expectedStatus = Enum.Parse<NotificationStatus>(status);
-        
-        if (expectedStatus == NotificationStatus.Failed)
+
+        if (expectedStatus == NotificationStatus.Pending)
         {
-            // Para status Failed, verificamos UpdateAsync (atualização após SaveAsync)
-            _mockRepository.Verify(x => x.UpdateAsync(
-                It.Is<NotificationHistory>(n => n.Status == expectedStatus)), Times.AtLeastOnce);
-        }
-        else
-        {
-            // Para outros status, verificamos SaveAsync
             _mockRepository.Verify(x => x.SaveAsync(
-                It.Is<NotificationHistory>(n => n.Status == expectedStatus || expectedStatus == NotificationStatus.Sent)), Times.AtLeastOnce);
+                It.Is<NotificationHistory>(n => n.Status == NotificationStatus.Pending)), Times.AtLeastOnce);
+            return;
         }
+
+        _mockRepository.Verify(x => x.UpdateAsync(
+            It.Is<NotificationHistory>(n => n.Status == expectedStatus)), Times.AtLeastOnce);
     }
 
     [Then(@"o assunto do email deve conter ""(.*)""")]
@@ -257,7 +247,7 @@ public class NotificationServiceSteps
         // Verifica se o texto está contido no subject enviado, ignorando case
         _mockEmailService.Verify(x => x.SendEmailAsync(
             It.IsAny<string>(),
-            It.Is<string>(s => s.ToLower().Contains(texto.ToLower())),
+            It.Is<string>(s => s.Contains(texto, StringComparison.OrdinalIgnoreCase)),
             It.IsAny<string>()), Times.AtLeastOnce);
     }
 
@@ -265,7 +255,7 @@ public class NotificationServiceSteps
     public void EntaoOTipoDeveSer(string tipo)
     {
         var expectedType = Enum.Parse<NotificationType>(tipo);
-        
+
         _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Type == expectedType)), Times.Once);
     }
