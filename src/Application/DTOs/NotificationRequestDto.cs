@@ -36,5 +36,5 @@ public class NotificationRequestDto
     /// Tipo de notificação
     /// </summary>
     [Required]
-    public NotificationType Type { get; set; }
+    public required NotificationType Type { get; set; }
 }

@@ -23,7 +23,7 @@ public class SmtpEmailService : IEmailService
 
         _logger.LogInformation(
             "📧 [EMAIL SIMULADO] Para: {To} | Assunto: {Subject} | Corpo: {Body}",
-            to, subject, body.Length > 50 ? body.Substring(0, 50) + "..." : body);
+            to, subject, body.Length > 50 ? string.Concat(body.AsSpan(0, 50), "...") : body);
 
         _logger.LogInformation(
             "SIMULAÇÃO: Email enviado com sucesso para {To}",

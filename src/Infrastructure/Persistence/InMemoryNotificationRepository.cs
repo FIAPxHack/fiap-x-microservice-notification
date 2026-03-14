@@ -13,8 +13,7 @@ public class InMemoryNotificationRepository : INotificationRepository
 
     public Task<NotificationHistory> SaveAsync(NotificationHistory notification)
     {
-        if (notification == null)
-            throw new ArgumentNullException(nameof(notification));
+        ArgumentNullException.ThrowIfNull(notification);
 
         _notifications.Add(notification);
         return Task.FromResult(notification);
@@ -38,8 +37,7 @@ public class InMemoryNotificationRepository : INotificationRepository
 
     public Task UpdateAsync(NotificationHistory notification)
     {
-        if (notification == null)
-            throw new ArgumentNullException(nameof(notification));
+        ArgumentNullException.ThrowIfNull(notification);
 
         // Para atualizar em ConcurrentBag, precisamos encontrar e manter a referência
         // Como estamos trabalhando com referências, a atualização já foi feita no objeto

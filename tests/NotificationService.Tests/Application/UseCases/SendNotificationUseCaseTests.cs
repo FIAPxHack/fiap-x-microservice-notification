@@ -3,10 +3,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.UseCases;
-using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enums;
 using NotificationService.Domain.Exceptions;
-using NotificationService.Domain.Interfaces.Repositories;
 using NotificationService.Domain.Interfaces.Services;
 using Xunit;
 
@@ -17,18 +15,15 @@ namespace NotificationService.Tests.Application.UseCases;
 /// </summary>
 public class SendNotificationUseCaseTests
 {
-    private readonly Mock<INotificationRepository> _mockRepository;
     private readonly Mock<IEmailService> _mockEmailService;
     private readonly Mock<ILogger<SendNotificationUseCase>> _mockLogger;
     private readonly SendNotificationUseCase _useCase;
 
     public SendNotificationUseCaseTests()
     {
-        _mockRepository = new Mock<INotificationRepository>();
         _mockEmailService = new Mock<IEmailService>();
         _mockLogger = new Mock<ILogger<SendNotificationUseCase>>();
         _useCase = new SendNotificationUseCase(
-            _mockRepository.Object,
             _mockEmailService.Object,
             _mockLogger.Object);
     }
@@ -65,13 +60,6 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             request.Message), Times.Once);
 
-        _mockRepository.Verify(x => x.SaveAsync(
-            It.Is<NotificationHistory>(n =>
-                n.UserId == request.UserId &&
-                n.Email == request.Email &&
-                n.Message == request.Message &&
-                n.Type == request.Type &&
-                n.Status == NotificationStatus.Sent)), Times.Once);
     }
 
     [Fact]
@@ -98,8 +86,6 @@ public class SendNotificationUseCaseTests
         // Assert
         await act.Should().ThrowAsync<NotificationException>();
 
-        _mockRepository.Verify(x => x.UpdateAsync(
-            It.Is<NotificationHistory>(n => n.Status == NotificationStatus.Failed)), Times.Once);
     }
 
     [Fact]
@@ -126,8 +112,6 @@ public class SendNotificationUseCaseTests
         // Assert
         await act.Should().ThrowAsync<NotificationException>();
 
-        _mockRepository.Verify(x => x.UpdateAsync(
-            It.Is<NotificationHistory>(n => n.Status == NotificationStatus.Failed)), Times.Once);
     }
 
     [Theory]
@@ -157,8 +141,6 @@ public class SendNotificationUseCaseTests
 
         // Assert
         result.Success.Should().BeTrue();
-        _mockRepository.Verify(x => x.SaveAsync(
-            It.Is<NotificationHistory>(n => n.Type == type)), Times.Once);
     }
 
     [Fact]
@@ -245,8 +227,6 @@ public class SendNotificationUseCaseTests
 
         // Assert
         result.Success.Should().BeTrue();
-        _mockRepository.Verify(x => x.SaveAsync(
-            It.Is<NotificationHistory>(n => n.Message.Length == 5000)), Times.Once);
     }
 
     [Fact]

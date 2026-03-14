@@ -13,16 +13,13 @@ namespace NotificationService.Presentation.Controllers;
 public class NotificationsController : ControllerBase
 {
     private readonly ISendNotificationUseCase _sendNotificationUseCase;
-    private readonly IGetUserNotificationsUseCase _getUserNotificationsUseCase;
     private readonly ILogger<NotificationsController> _logger;
 
     public NotificationsController(
         ISendNotificationUseCase sendNotificationUseCase,
-        IGetUserNotificationsUseCase getUserNotificationsUseCase,
         ILogger<NotificationsController> logger)
     {
         _sendNotificationUseCase = sendNotificationUseCase;
-        _getUserNotificationsUseCase = getUserNotificationsUseCase;
         _logger = logger;
     }
 
@@ -55,31 +52,10 @@ public class NotificationsController : ControllerBase
     }
 
     /// <summary>
-    /// Retorna o histórico de notificações de um usuário
-    /// </summary>
-    /// <param name="userId">ID do usuário</param>
-    /// <returns>Lista de notificações do usuário</returns>
-    [HttpGet("user/{userId}")]
-    [ProducesResponseType(typeof(IEnumerable<NotificationHistoryDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetUserNotifications([FromRoute] string userId)
-    {
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return BadRequest(new { message = "UserId é obrigatório" });
-        }
-
-        _logger.LogInformation("Buscando notificações para o usuário {UserId}", userId);
-
-        var notifications = await _getUserNotificationsUseCase.ExecuteAsync(userId);
-        return Ok(notifications);
-    }
-
-    /// <summary>
     /// Health check endpoint
     /// </summary>
     [HttpGet("health")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public IActionResult Health()
     {
         return Ok(new

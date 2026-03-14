@@ -124,7 +124,6 @@ public class NotificationResponseDtoTests
     {
         // Arrange & Act
         var dto1 = new NotificationResponseDto();
-        Thread.Sleep(10);
         var dto2 = new NotificationResponseDto();
 
         // Assert
