@@ -29,22 +29,39 @@ jobs:
       - name: Instalar dotnet-coverage tool
         run: dotnet tool install --global dotnet-coverage
 
+      - name: Instalar ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
       - name: Rodar Testes com Cobertura
         run: |
           dotnet test --configuration Release --no-build --verbosity normal \
             --collect:"Code Coverage"
 
-      - name: Converter cobertura para XML
+      - name: Converter cobertura para Cobertura XML
         run: |
-          echo "=== Converting .coverage files to XML ==="
+          echo "=== Converting .coverage files to Cobertura XML ==="
           for file in $(find . -name "*.coverage" -type f); do
             echo "Converting: $file"
-            dotnet-coverage merge -f xml -o "${file%.coverage}.xml" "$file"
+            dotnet-coverage merge -f cobertura -o "${file%.coverage}.cobertura.xml" "$file"
           done
+
+      - name: Converter Cobertura para OpenCover
+        run: |
+          echo "=== Converting Cobertura to OpenCover format ==="
+          mkdir -p coverage
+          reportgenerator \
+            -reports:**/*.cobertura.xml \
+            -targetdir:coverage \
+            -reporttypes:OpenCover
+          
+          echo "=== Generated OpenCover file ==="
+          ls -lah coverage/
 
       - name: Upload cobertura de código
         uses: actions/upload-artifact@v4
         with:
           name: cobertura-code-coverage
-          path: '**/TestResults/**/*.xml'
+          path: |
+            **/TestResults/**/*.xml
+            coverage/coverage.opencover.xml
           retention-days: 7
