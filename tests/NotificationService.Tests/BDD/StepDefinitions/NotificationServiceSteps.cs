@@ -46,10 +46,10 @@ public class NotificationServiceSteps
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .ReturnsAsync(() => _emailServiceAvailable);
-
-        _mockRepository.Setup(x => x.AddAsync(It.IsAny<NotificationHistory>()))
             .Returns(Task.CompletedTask);
+
+        _mockRepository.Setup(x => x.SaveAsync(It.IsAny<NotificationHistory>()))
+            .ReturnsAsync((NotificationHistory notification) => notification);
 
         _mockRepository.Setup(x => x.GetByUserIdAsync(It.IsAny<string>()))
             .ReturnsAsync((string userId) =>
@@ -87,7 +87,7 @@ public class NotificationServiceSteps
     }
 
     [Given(@"que foram enviadas (.*) notificações para este usuário")]
-    public async Task DadoQueForamEnviadasNotificacoesParaEsteUsuario(int quantidade)
+    public void DadoQueForamEnviadasNotificacoesParaEsteUsuario(int quantidade)
     {
         var notifications = new List<NotificationHistory>();
         for (int i = 0; i < quantidade; i++)
@@ -95,6 +95,7 @@ public class NotificationServiceSteps
             var notification = new NotificationHistory(
                 _userId!,
                 _email!,
+                "Test Subject",
                 $"Message {i + 1}",
                 NotificationType.General);
             notification.MarkAsSent();
@@ -110,9 +111,9 @@ public class NotificationServiceSteps
     {
         var notifications = new List<NotificationHistory>
         {
-            new NotificationHistory(_userId!, _email!, "Sent message", NotificationType.General),
-            new NotificationHistory(_userId!, _email!, "Failed message", NotificationType.General),
-            new NotificationHistory(_userId!, _email!, "Pending message", NotificationType.General)
+            new NotificationHistory(_userId!, _email!, "Test Subject", "Sent message", NotificationType.General),
+            new NotificationHistory(_userId!, _email!, "Test Subject", "Failed message", NotificationType.General),
+            new NotificationHistory(_userId!, _email!, "Test Subject", "Pending message", NotificationType.General)
         };
 
         notifications[0].MarkAsSent();
@@ -213,7 +214,7 @@ public class NotificationServiceSteps
     {
         var expectedStatus = Enum.Parse<NotificationStatus>(status);
         
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Status == expectedStatus)), Times.Once);
     }
 
@@ -231,7 +232,7 @@ public class NotificationServiceSteps
     {
         var expectedType = Enum.Parse<NotificationType>(tipo);
         
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Type == expectedType)), Times.Once);
     }
 
@@ -259,7 +260,7 @@ public class NotificationServiceSteps
     [Then(@"a mensagem deve estar completa")]
     public void EntaoAMensagemDeveEstarCompleta()
     {
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Message == _message)), Times.Once);
     }
 

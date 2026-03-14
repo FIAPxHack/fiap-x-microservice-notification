@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NotificationService.Infrastructure.Email;
@@ -13,15 +14,17 @@ public class SmtpEmailServiceTests
 {
     private readonly Mock<ILogger<SmtpEmailService>> _mockLogger;
     private readonly SmtpEmailService _emailService;
+    private readonly Mock<IConfiguration> _mockConfiguration;
 
     public SmtpEmailServiceTests()
     {
         _mockLogger = new Mock<ILogger<SmtpEmailService>>();
-        _emailService = new SmtpEmailService(_mockLogger.Object);
+        _mockConfiguration = new Mock<IConfiguration>();
+        _emailService = new SmtpEmailService(_mockLogger.Object, _mockConfiguration.Object);
     }
 
     [Fact]
-    public async Task SendEmailAsync_WithValidParameters_ShouldReturnTrue()
+    public async Task SendEmailAsync_WithValidParameters_ShouldComplete()
     {
         // Arrange
         var to = "test@example.com";
@@ -29,10 +32,10 @@ public class SmtpEmailServiceTests
         var body = "Test Body";
 
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        var act = async () => await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -64,10 +67,10 @@ public class SmtpEmailServiceTests
     public async Task SendEmailAsync_WithVariousInputs_ShouldSucceed(string to, string subject, string body)
     {
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        var act = async () => await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -79,10 +82,10 @@ public class SmtpEmailServiceTests
         var body = new string('A', 10000);
 
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        var act = async () => await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -94,10 +97,10 @@ public class SmtpEmailServiceTests
         var body = "<html><body><h1>Test</h1><p>Content</p></body></html>";
 
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        var act = async () => await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -109,10 +112,10 @@ public class SmtpEmailServiceTests
         var body = "Body     with     spaces";
 
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        var act = async () => await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -129,8 +132,8 @@ public class SmtpEmailServiceTests
         // Act & Assert
         foreach (var (to, subject, body) in emails)
         {
-            var result = await _emailService.SendEmailAsync(to, subject, body);
-            result.Should().BeTrue();
+            var act = async () => await _emailService.SendEmailAsync(to, subject, body);
+            await act.Should().NotThrowAsync();
         }
     }
 
@@ -143,10 +146,10 @@ public class SmtpEmailServiceTests
         var body = "Test body";
 
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        var act = async () => await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -158,10 +161,10 @@ public class SmtpEmailServiceTests
         var body = "";
 
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        var act = async () => await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -173,10 +176,9 @@ public class SmtpEmailServiceTests
         var body = "This tests the simulation mode";
 
         // Act
-        var result = await _emailService.SendEmailAsync(to, subject, body);
+        await _emailService.SendEmailAsync(to, subject, body);
 
         // Assert
-        result.Should().BeTrue();
         _mockLogger.Verify(
             x => x.Log(
                 LogLevel.Information,
