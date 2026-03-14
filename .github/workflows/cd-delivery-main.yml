@@ -45,6 +45,12 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
+      - name: Instalar dotnet-coverage tool
+        run: dotnet tool install --global dotnet-coverage
+
+      - name: Instalar ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
       - name: Instalar SonarScanner para .NET
         run: dotnet tool install --global dotnet-sonarscanner
 
@@ -65,9 +71,29 @@ jobs:
             /o:"fiapxhack" \
             /d:sonar.token="${SONAR_TOKEN}" \
             /d:sonar.host.url="${SONAR_HOST_URL}" \
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/tests/**/*"
           
           dotnet build --configuration Release
+          
+          dotnet test --configuration Release --no-build --verbosity normal \
+            --collect:"Code Coverage"
+          
+          echo "=== Converting .coverage files to Cobertura XML ==="
+          for file in $(find . -name "*.coverage" -type f); do
+            echo "Converting: $file"
+            dotnet-coverage merge -f cobertura -o "${file%.coverage}.cobertura.xml" "$file"
+          done
+          
+          echo "=== Converting Cobertura to OpenCover format ==="
+          mkdir -p coverage
+          reportgenerator \
+            -reports:**/*.cobertura.xml \
+            -targetdir:coverage \
+            -reporttypes:OpenCover
+          
+          echo "=== Generated OpenCover file ==="
+          ls -lah coverage/
           
           dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
 
