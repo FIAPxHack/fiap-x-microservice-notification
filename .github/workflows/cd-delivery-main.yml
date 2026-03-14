@@ -45,12 +45,6 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Instalar dotnet-coverage tool
-        run: dotnet tool install --global dotnet-coverage
-
-      - name: Instalar ReportGenerator
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
-
       - name: Instalar SonarScanner para .NET
         run: dotnet tool install --global dotnet-sonarscanner
 
@@ -80,18 +74,16 @@ jobs:
             --configuration Release \
             --no-build \
             --verbosity normal \
-            --collect:"Code Coverage" \
-            --results-directory ./TestResults
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           
-          echo "=== Converting .coverage to Cobertura XML ==="
-          dotnet-coverage merge ./TestResults/**/*.coverage -f cobertura -o coverage.cobertura.xml
+          echo "=== Locating coverage files ==="
+          find ./TestResults -name "coverage.opencover.xml" -type f
           
-          echo "=== Converting Cobertura to OpenCover format ==="
+          echo "=== Copying coverage file ==="
           mkdir -p coverage
-          reportgenerator \
-            -reports:coverage.cobertura.xml \
-            -targetdir:coverage \
-            -reporttypes:OpenCover
+          find ./TestResults -name "coverage.opencover.xml" -exec cp {} coverage/coverage.opencover.xml \;
           
           echo "=== Generated OpenCover file ==="
           ls -lh coverage/coverage.opencover.xml

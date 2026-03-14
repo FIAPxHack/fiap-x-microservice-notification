@@ -26,34 +26,24 @@ jobs:
       - name: Rodar Testes
         run: dotnet test --no-build --configuration Release --verbosity normal
 
-      - name: Instalar dotnet-coverage tool
-        run: dotnet tool install --global dotnet-coverage
-
-      - name: Instalar ReportGenerator
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
-
       - name: Rodar Testes com Cobertura
         run: |
           dotnet test NotificationService.sln \
             --configuration Release \
             --no-build \
             --verbosity normal \
-            --collect:"Code Coverage" \
-            --results-directory ./TestResults
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
-      - name: Converter cobertura para Cobertura XML
+      - name: Copiar arquivo de cobertura
         run: |
-          echo "=== Converting .coverage to Cobertura XML ==="
-          dotnet-coverage merge ./TestResults/**/*.coverage -f cobertura -o coverage.cobertura.xml
-
-      - name: Converter Cobertura para OpenCover
-        run: |
-          echo "=== Converting Cobertura to OpenCover format ==="
+          echo "=== Locating coverage files ==="
+          find ./TestResults -name "coverage.opencover.xml" -type f
+          
+          echo "=== Copying coverage file ==="
           mkdir -p coverage
-          reportgenerator \
-            -reports:coverage.cobertura.xml \
-            -targetdir:coverage \
-            -reporttypes:OpenCover
+          find ./TestResults -name "coverage.opencover.xml" -exec cp {} coverage/coverage.opencover.xml \;
           
           echo "=== Generated OpenCover file ==="
           ls -lh coverage/coverage.opencover.xml
