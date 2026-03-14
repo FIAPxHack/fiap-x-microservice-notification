@@ -278,4 +278,113 @@ public class SendNotificationUseCaseTests
         // Assert
         result.NotificationId.Should().Be(savedNotification!.Id);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WithInvalidEmail_ShouldReturnFailure()
+    {
+        // Arrange
+        var request = new NotificationRequestDto
+        {
+            UserId = "user123",
+            Email = "invalid-email",
+            Message = "Test message",
+            Type = NotificationType.General
+        };
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("Email inválido");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithCustomSubject_ShouldUseProvidedSubject()
+    {
+        // Arrange
+        var customSubject = "My Custom Subject";
+        var request = new NotificationRequestDto
+        {
+            UserId = "user123",
+            Email = "test@example.com",
+            Subject = customSubject,
+            Message = "Test message",
+            Type = NotificationType.General
+        };
+
+        string? capturedSubject = null;
+        _mockEmailService.Setup(x => x.SendEmailAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<string>()))
+            .Callback<string, string, string>((email, subject, message) => capturedSubject = subject)
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _useCase.ExecuteAsync(request);
+
+        // Assert
+        capturedSubject.Should().Be(customSubject);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullSubject_ShouldGenerateDefault()
+    {
+        // Arrange
+        var request = new NotificationRequestDto
+        {
+            UserId = "user123",
+            Email = "test@example.com",
+            Subject = null,
+            Message = "Test message",
+            Type = NotificationType.General
+        };
+
+        string? capturedSubject = null;
+        _mockEmailService.Setup(x => x.SendEmailAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<string>()))
+            .Callback<string, string, string>((email, subject, message) => capturedSubject = subject)
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _useCase.ExecuteAsync(request);
+
+        // Assert
+        capturedSubject.Should().NotBeNullOrEmpty();
+        capturedSubject.Should().Contain("FIAP X");
+    }
+
+    [Theory]
+    [InlineData("test@test", false)]
+    [InlineData("test", false)]
+    [InlineData("@test", false)]
+    [InlineData("test@", false)]
+    [InlineData("test@example.com", true)]
+    public async Task ExecuteAsync_WithVariousEmailFormats_ShouldValidateCorrectly(string email, bool shouldSucceed)
+    {
+        // Arrange
+        var request = new NotificationRequestDto
+        {
+            UserId = "user123",
+            Email = email,
+            Message = "Test message",
+            Type = NotificationType.General
+        };
+
+        _mockEmailService.Setup(x => x.SendEmailAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.Success.Should().Be(shouldSucceed);
+    }
 }
