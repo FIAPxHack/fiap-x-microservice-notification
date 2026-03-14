@@ -43,17 +43,8 @@ jobs:
 
       - name: Converter cobertura para Cobertura XML
         run: |
-          echo "=== Coverage files generated ==="
-          find . -name "*.coverage" -type f
-          
-          echo "=== Merging coverage files to Cobertura XML ==="
-          coverage_files=$(find . -name "*.coverage" -type f)
-          if [ -n "$coverage_files" ]; then
-            dotnet-coverage merge $coverage_files -f cobertura -o coverage.cobertura.xml
-          else
-            echo "No coverage files found!"
-            exit 1
-          fi
+          echo "=== Converting .coverage to Cobertura XML ==="
+          dotnet-coverage merge ./TestResults/**/*.coverage -f cobertura -o coverage.cobertura.xml
 
       - name: Converter Cobertura para OpenCover
         run: |
