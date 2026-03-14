@@ -20,7 +20,7 @@ public class NotificationHistoryTests
         var type = NotificationType.General;
 
         // Act
-        var notification = new NotificationHistory(userId, email, message, type);
+        var notification = new NotificationHistory(userId, email, "Subject", message, type);
 
         // Assert
         notification.UserId.Should().Be(userId);
@@ -37,8 +37,8 @@ public class NotificationHistoryTests
     public void Constructor_ShouldGenerateUniqueIds()
     {
         // Arrange & Act
-        var notification1 = new NotificationHistory("user1", "email1@test.com", "msg1", NotificationType.General);
-        var notification2 = new NotificationHistory("user2", "email2@test.com", "msg2", NotificationType.General);
+        var notification1 = new NotificationHistory("user1", "email1@test.com", "Test Subject", "msg1", NotificationType.General);
+        var notification2 = new NotificationHistory("user2", "email2@test.com", "Test Subject", "msg2", NotificationType.General);
 
         // Assert
         notification1.Id.Should().NotBe(notification2.Id);
@@ -48,7 +48,7 @@ public class NotificationHistoryTests
     public void MarkAsSent_ShouldUpdateStatusAndSetSentAt()
     {
         // Arrange
-        var notification = new NotificationHistory("user", "email@test.com", "message", NotificationType.General);
+        var notification = new NotificationHistory("user", "email@test.com", "Test Subject", "message", NotificationType.General);
         var beforeMark = DateTime.UtcNow;
 
         // Act
@@ -65,7 +65,7 @@ public class NotificationHistoryTests
     public void MarkAsFailed_ShouldUpdateStatusToFailed()
     {
         // Arrange
-        var notification = new NotificationHistory("user", "email@test.com", "message", NotificationType.General);
+        var notification = new NotificationHistory("user", "email@test.com", "Test Subject", "message", NotificationType.General);
 
         // Act
         notification.MarkAsFailed();
@@ -79,7 +79,7 @@ public class NotificationHistoryTests
     public void MarkAsSent_MultipleTimesCallings_ShouldKeepFirstSentAtValue()
     {
         // Arrange
-        var notification = new NotificationHistory("user", "email@test.com", "message", NotificationType.General);
+        var notification = new NotificationHistory("user", "email@test.com", "Test Subject", "message", NotificationType.General);
         
         // Act
         notification.MarkAsSent();
@@ -99,7 +99,7 @@ public class NotificationHistoryTests
     public void Constructor_ShouldAcceptAllNotificationTypes(NotificationType type)
     {
         // Act
-        var notification = new NotificationHistory("user", "email@test.com", "message", type);
+        var notification = new NotificationHistory("user", "email@test.com", "Subject", "message", type);
 
         // Assert
         notification.Type.Should().Be(type);
@@ -112,7 +112,7 @@ public class NotificationHistoryTests
         var email = "complex.email+tag@subdomain.example.co.uk";
 
         // Act
-        var notification = new NotificationHistory("user", email, "message", NotificationType.General);
+        var notification = new NotificationHistory("user", email, "Test Subject", "message", NotificationType.General);
 
         // Assert
         notification.Email.Should().Be(email);
@@ -125,7 +125,7 @@ public class NotificationHistoryTests
         var longMessage = new string('A', 1000);
 
         // Act
-        var notification = new NotificationHistory("user", "email@test.com", longMessage, NotificationType.General);
+        var notification = new NotificationHistory("user", "email@test.com", "Subject", longMessage, NotificationType.General);
 
         // Assert
         notification.Message.Should().Be(longMessage);
@@ -136,7 +136,7 @@ public class NotificationHistoryTests
     public void PendingNotification_ShouldNotHaveSentAt()
     {
         // Arrange & Act
-        var notification = new NotificationHistory("user", "email@test.com", "message", NotificationType.General);
+        var notification = new NotificationHistory("user", "email@test.com", "Test Subject", "message", NotificationType.General);
 
         // Assert
         notification.Status.Should().Be(NotificationStatus.Pending);

@@ -32,9 +32,9 @@ public class GetUserNotificationsUseCaseTests
         var userId = "user123";
         var notifications = new List<NotificationHistory>
         {
-            new NotificationHistory(userId, "email1@test.com", "Message 1", NotificationType.General),
-            new NotificationHistory(userId, "email2@test.com", "Message 2", NotificationType.VideoProcessingStarted),
-            new NotificationHistory(userId, "email3@test.com", "Message 3", NotificationType.VideoProcessingCompleted)
+            new NotificationHistory(userId, "email1@test.com", "Test Subject", "Message 1", NotificationType.General),
+            new NotificationHistory(userId, "email2@test.com", "Test Subject", "Message 2", NotificationType.VideoProcessingStarted),
+            new NotificationHistory(userId, "email3@test.com", "Test Subject", "Message 3", NotificationType.VideoProcessingCompleted)
         };
 
         _mockRepository.Setup(x => x.GetByUserIdAsync(userId))
@@ -73,7 +73,7 @@ public class GetUserNotificationsUseCaseTests
     {
         // Arrange
         var userId = "user123";
-        var notification = new NotificationHistory(userId, "test@example.com", "Test message", NotificationType.VideoProcessingCompleted);
+        var notification = new NotificationHistory(userId, "test@example.com", "Test Subject", "Test message", NotificationType.VideoProcessingCompleted);
         notification.MarkAsSent();
 
         _mockRepository.Setup(x => x.GetByUserIdAsync(userId))
@@ -101,9 +101,9 @@ public class GetUserNotificationsUseCaseTests
         var userId = "user123";
         var notifications = new List<NotificationHistory>
         {
-            new NotificationHistory(userId, "email1@test.com", "Pending", NotificationType.General),
-            new NotificationHistory(userId, "email2@test.com", "Sent", NotificationType.General),
-            new NotificationHistory(userId, "email3@test.com", "Failed", NotificationType.General)
+            new NotificationHistory(userId, "email1@test.com", "Test Subject", "Pending", NotificationType.General),
+            new NotificationHistory(userId, "email2@test.com", "Test Subject", "Sent", NotificationType.General),
+            new NotificationHistory(userId, "email3@test.com", "Test Subject", "Failed", NotificationType.General)
         };
 
         notifications[1].MarkAsSent();
@@ -143,7 +143,7 @@ public class GetUserNotificationsUseCaseTests
         // Arrange
         var userId = "user123";
         var notifications = Enumerable.Range(1, 100)
-            .Select(i => new NotificationHistory(userId, $"email{i}@test.com", $"Message {i}", NotificationType.General))
+            .Select(i => new NotificationHistory(userId, $"email{i}@test.com", "Subject", $"Message {i}", NotificationType.General))
             .ToList();
 
         _mockRepository.Setup(x => x.GetByUserIdAsync(userId))
@@ -202,7 +202,7 @@ public class GetUserNotificationsUseCaseTests
         // Arrange
         var userId = "user123";
         var specificDate = new DateTime(2026, 3, 10, 10, 30, 0, DateTimeKind.Utc);
-        var notification = new NotificationHistory(userId, "test@example.com", "Test", NotificationType.General);
+        var notification = new NotificationHistory(userId, "test@example.com", "Test Subject", "Test", NotificationType.General);
         
         // Use reflection to set CreatedAt for testing
         var createdAtProperty = typeof(NotificationHistory).GetProperty(nameof(NotificationHistory.CreatedAt));

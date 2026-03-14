@@ -49,7 +49,7 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .ReturnsAsync(true);
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -65,7 +65,7 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             request.Message), Times.Once);
 
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n =>
                 n.UserId == request.UserId &&
                 n.Email == request.Email &&
@@ -90,7 +90,7 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .ReturnsAsync(false);
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -100,7 +100,7 @@ public class SendNotificationUseCaseTests
         result.Success.Should().BeFalse();
         result.Message.Should().Be("Falha ao enviar notificação");
 
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Status == NotificationStatus.Failed)), Times.Once);
     }
 
@@ -129,7 +129,7 @@ public class SendNotificationUseCaseTests
         await act.Should().ThrowAsync<NotificationException>()
             .WithMessage("Erro ao processar notificação: SMTP error");
 
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Status == NotificationStatus.Failed)), Times.Once);
     }
 
@@ -153,14 +153,14 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .ReturnsAsync(true);
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
         result.Success.Should().BeTrue();
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Type == type)), Times.Once);
     }
 
@@ -182,7 +182,7 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             It.IsAny<string>()))
             .Callback<string, string, string>((email, subject, message) => capturedSubject = subject)
-            .ReturnsAsync(true);
+            .Returns(Task.CompletedTask);
 
         // Act
         await _useCase.ExecuteAsync(request);
@@ -207,7 +207,7 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .ReturnsAsync(true);
+            .Returns(Task.CompletedTask);
 
         // Act
         await _useCase.ExecuteAsync(request);
@@ -240,14 +240,14 @@ public class SendNotificationUseCaseTests
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .ReturnsAsync(true);
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
         result.Success.Should().BeTrue();
-        _mockRepository.Verify(x => x.AddAsync(
+        _mockRepository.Verify(x => x.SaveAsync(
             It.Is<NotificationHistory>(n => n.Message.Length == 5000)), Times.Once);
     }
 
@@ -264,15 +264,15 @@ public class SendNotificationUseCaseTests
         };
 
         NotificationHistory? savedNotification = null;
-        _mockRepository.Setup(x => x.AddAsync(It.IsAny<NotificationHistory>()))
+        _mockRepository.Setup(x => x.SaveAsync(It.IsAny<NotificationHistory>()))
             .Callback<NotificationHistory>(n => savedNotification = n)
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync((NotificationHistory n) => n);
 
         _mockEmailService.Setup(x => x.SendEmailAsync(
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>()))
-            .ReturnsAsync(true);
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);

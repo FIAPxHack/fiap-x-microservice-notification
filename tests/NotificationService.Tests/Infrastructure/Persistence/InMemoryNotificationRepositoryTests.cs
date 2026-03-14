@@ -16,10 +16,10 @@ public class InMemoryNotificationRepositoryTests
     {
         // Arrange
         var repository = new InMemoryNotificationRepository();
-        var notification = new NotificationHistory("user1", "test@example.com", "Test", NotificationType.General);
+        var notification = new NotificationHistory("user1", "test@example.com", "Test Subject", "Test", NotificationType.General);
 
         // Act
-        await repository.AddAsync(notification);
+        await repository.SaveAsync(notification);
         var result = await repository.GetByUserIdAsync("user1");
 
         // Assert
@@ -45,13 +45,13 @@ public class InMemoryNotificationRepositoryTests
     {
         // Arrange
         var repository = new InMemoryNotificationRepository();
-        var user1Notif1 = new NotificationHistory("user1", "email1@test.com", "Message 1", NotificationType.General);
-        var user1Notif2 = new NotificationHistory("user1", "email2@test.com", "Message 2", NotificationType.General);
-        var user2Notif = new NotificationHistory("user2", "email3@test.com", "Message 3", NotificationType.General);
+        var user1Notif1 = new NotificationHistory("user1", "email1@test.com", "Test Subject", "Message 1", NotificationType.General);
+        var user1Notif2 = new NotificationHistory("user1", "email2@test.com", "Test Subject", "Message 2", NotificationType.General);
+        var user2Notif = new NotificationHistory("user2", "email3@test.com", "Test Subject", "Message 3", NotificationType.General);
 
-        await repository.AddAsync(user1Notif1);
-        await repository.AddAsync(user1Notif2);
-        await repository.AddAsync(user2Notif);
+        await repository.SaveAsync(user1Notif1);
+        await repository.SaveAsync(user1Notif2);
+        await repository.SaveAsync(user2Notif);
 
         // Act
         var result = await repository.GetByUserIdAsync("user1");
@@ -67,13 +67,13 @@ public class InMemoryNotificationRepositoryTests
         // Arrange
         var repository = new InMemoryNotificationRepository();
         var notifications = Enumerable.Range(1, 10)
-            .Select(i => new NotificationHistory($"user{i}", $"email{i}@test.com", $"Message {i}", NotificationType.General))
+            .Select(i => new NotificationHistory($"user{i}", $"email{i}@test.com", "Subject", $"Message {i}", NotificationType.General))
             .ToList();
 
         // Act
         foreach (var notification in notifications)
         {
-            await repository.AddAsync(notification);
+            await repository.SaveAsync(notification);
         }
 
         // Assert
@@ -89,13 +89,13 @@ public class InMemoryNotificationRepositoryTests
     {
         // Arrange
         var repository = new InMemoryNotificationRepository();
-        var notif1 = new NotificationHistory("user1", "email1@test.com", "First", NotificationType.General);
-        var notif2 = new NotificationHistory("user1", "email2@test.com", "Second", NotificationType.General);
-        var notif3 = new NotificationHistory("user1", "email3@test.com", "Third", NotificationType.General);
+        var notif1 = new NotificationHistory("user1", "email1@test.com", "Test Subject", "First", NotificationType.General);
+        var notif2 = new NotificationHistory("user1", "email2@test.com", "Test Subject", "Second", NotificationType.General);
+        var notif3 = new NotificationHistory("user1", "email3@test.com", "Test Subject", "Third", NotificationType.General);
 
-        await repository.AddAsync(notif1);
-        await repository.AddAsync(notif2);
-        await repository.AddAsync(notif3);
+        await repository.SaveAsync(notif1);
+        await repository.SaveAsync(notif2);
+        await repository.SaveAsync(notif3);
 
         // Act
         var result = (await repository.GetByUserIdAsync("user1")).ToList();
@@ -111,11 +111,11 @@ public class InMemoryNotificationRepositoryTests
     {
         // Arrange
         var repository = new InMemoryNotificationRepository();
-        var notification = new NotificationHistory("user1", "test@example.com", "Test", NotificationType.General);
+        var notification = new NotificationHistory("user1", "test@example.com", "Test Subject", "Test", NotificationType.General);
 
         // Act
-        await repository.AddAsync(notification);
-        await repository.AddAsync(notification);
+        await repository.SaveAsync(notification);
+        await repository.SaveAsync(notification);
 
         var result = await repository.GetByUserIdAsync("user1");
 
@@ -128,16 +128,16 @@ public class InMemoryNotificationRepositoryTests
     {
         // Arrange
         var repository = new InMemoryNotificationRepository();
-        var pending = new NotificationHistory("user1", "email1@test.com", "Pending", NotificationType.General);
-        var sent = new NotificationHistory("user1", "email2@test.com", "Sent", NotificationType.General);
-        var failed = new NotificationHistory("user1", "email3@test.com", "Failed", NotificationType.General);
+        var pending = new NotificationHistory("user1", "email1@test.com", "Test Subject", "Pending", NotificationType.General);
+        var sent = new NotificationHistory("user1", "email2@test.com", "Test Subject", "Sent", NotificationType.General);
+        var failed = new NotificationHistory("user1", "email3@test.com", "Test Subject", "Failed", NotificationType.General);
 
         sent.MarkAsSent();
         failed.MarkAsFailed();
 
-        await repository.AddAsync(pending);
-        await repository.AddAsync(sent);
-        await repository.AddAsync(failed);
+        await repository.SaveAsync(pending);
+        await repository.SaveAsync(sent);
+        await repository.SaveAsync(failed);
 
         // Act
         var result = await repository.GetByUserIdAsync("user1");
@@ -157,8 +157,8 @@ public class InMemoryNotificationRepositoryTests
         var tasks = Enumerable.Range(1, 100)
             .Select(i => Task.Run(async () =>
             {
-                var notification = new NotificationHistory($"user{i % 10}", $"email{i}@test.com", $"Message {i}", NotificationType.General);
-                await repository.AddAsync(notification);
+                var notification = new NotificationHistory($"user{i % 10}", $"email{i}@test.com", "Subject", $"Message {i}", NotificationType.General);
+                await repository.SaveAsync(notification);
             }))
             .ToList();
 
@@ -182,10 +182,10 @@ public class InMemoryNotificationRepositoryTests
     {
         // Arrange
         var repository = new InMemoryNotificationRepository();
-        var notification = new NotificationHistory("user1", "test@example.com", "Test", type);
+        var notification = new NotificationHistory("user1", "test@example.com", "Test Subject", "Test Message", type);
 
         // Act
-        await repository.AddAsync(notification);
+        await repository.SaveAsync(notification);
         var result = await repository.GetByUserIdAsync("user1");
 
         // Assert
@@ -197,8 +197,8 @@ public class InMemoryNotificationRepositoryTests
     {
         // Arrange
         var repository = new InMemoryNotificationRepository();
-        var notification = new NotificationHistory("user1", "test@example.com", "Original", NotificationType.General);
-        await repository.AddAsync(notification);
+        var notification = new NotificationHistory("user1", "test@example.com", "Test Subject", "Original", NotificationType.General);
+        await repository.SaveAsync(notification);
 
         // Act
         var result1 = await repository.GetByUserIdAsync("user1");
