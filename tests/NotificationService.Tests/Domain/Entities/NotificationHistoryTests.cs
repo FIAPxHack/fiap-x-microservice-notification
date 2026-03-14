@@ -84,7 +84,6 @@ public class NotificationHistoryTests
         // Act
         notification.MarkAsSent();
         var firstSentAt = notification.SentAt;
-        Thread.Sleep(10);
         notification.MarkAsSent();
 
         // Assert

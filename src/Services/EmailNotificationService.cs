@@ -6,14 +6,12 @@ namespace NotificationService.Services;
 public class EmailNotificationService : INotificationService
 {
     private readonly ILogger<EmailNotificationService> _logger;
-    private readonly IConfiguration _configuration;
     
     private static readonly ConcurrentBag<NotificationHistory> _notificationHistory = new();
 
-    public EmailNotificationService(ILogger<EmailNotificationService> _logger, IConfiguration configuration)
+    public EmailNotificationService(ILogger<EmailNotificationService> logger)
     {
-        this._logger = _logger;
-        _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<NotificationResponse> SendNotificationAsync(NotificationRequest request)
@@ -74,16 +72,6 @@ public class EmailNotificationService : INotificationService
                 Message = $"Erro ao enviar notificação: {ex.Message}"
             };
         }
-    }
-
-    public Task<IEnumerable<NotificationHistory>> GetUserNotificationsAsync(string userId)
-    {
-        var notifications = _notificationHistory
-            .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedAt)
-            .AsEnumerable();
-
-        return Task.FromResult(notifications);
     }
 
     private async Task SimulateSendEmailAsync(NotificationRequest request)

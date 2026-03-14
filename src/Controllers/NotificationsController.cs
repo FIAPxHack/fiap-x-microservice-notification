@@ -9,14 +9,11 @@ namespace NotificationService.Controllers;
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationService _notificationService;
-    private readonly ILogger<NotificationsController> _logger;
 
     public NotificationsController(
-        INotificationService notificationService,
-        ILogger<NotificationsController> logger)
+        INotificationService notificationService)
     {
         _notificationService = notificationService;
-        _logger = logger;
     }
 
     /// <summary>
@@ -43,25 +40,10 @@ public class NotificationsController : ControllerBase
     }
 
     /// <summary>
-    /// Retorna o histórico de notificações de um usuário
-    /// </summary>
-    [HttpGet("user/{userId}")]
-    [ProducesResponseType(typeof(IEnumerable<NotificationHistory>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetUserNotifications(string userId)
-    {
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return BadRequest(new { message = "UserId é obrigatório" });
-        }
-
-        var notifications = await _notificationService.GetUserNotificationsAsync(userId);
-        return Ok(notifications);
-    }
-
-    /// <summary>
     /// Health check endpoint
     /// </summary>
     [HttpGet("health")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public IActionResult Health()
     {
         return Ok(new
